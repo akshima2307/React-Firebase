@@ -16,6 +16,7 @@ function App() {
   const [turns, setTurns] = useState(0);
   const [choiceOne, setChoiceOne] = useState(null);
   const [choiceTwo, setChoiceTwo] = useState(null);
+  const [disabled, setDisabled] = useState(false);
 
   const shuffleCards = () => {
     // 1. Duplicate each card
@@ -34,14 +35,9 @@ function App() {
     choiceOne ? setChoiceTwo(card) : setChoiceOne(card);
   };
 
-  const resetCards = () => {
-    setChoiceOne(null);
-    setChoiceTwo(null);
-    setTurns((prevTruns) => prevTruns + 1);
-  };
-
   useEffect(() => {
     if (choiceOne && choiceTwo) {
+      setDisabled(true);
       if (choiceTwo.src === choiceOne.src) {
         setCards((prevCards) => {
           return prevCards.map((card) => {
@@ -59,7 +55,18 @@ function App() {
     }
   }, [choiceOne, choiceTwo]);
 
-  console.log(cards);
+  const resetCards = () => {
+    setChoiceOne(null);
+    setChoiceTwo(null);
+    setTurns((prevTruns) => prevTruns + 1);
+    setDisabled(false);
+  };
+
+  useEffect(() => {
+    shuffleCards();
+    setChoiceOne(null);
+    setChoiceTwo(null);
+  }, []);
 
   return (
     <div className="App">
@@ -72,9 +79,11 @@ function App() {
             card={card}
             handleChoice={handleChoice}
             flipped={card === choiceOne || card === choiceTwo || card.matched}
+            disabled={disabled}
           />
         ))}
       </div>
+      <p>Turns: {turns}</p>
     </div>
   );
 }
