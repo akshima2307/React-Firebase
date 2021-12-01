@@ -1,15 +1,47 @@
 import "./Create.css";
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
+import { useFetch } from "../../hooks/useFetch";
+import { useHistory } from "react-router-dom";
 
 const Create = () => {
   const [title, setTitle] = useState("");
   const [method, setMethod] = useState("");
   const [cookingTime, setCookingTime] = useState("");
+  const [newIngredient, setNewIngredient] = useState("");
+  const [ingredients, setIngredients] = useState([]);
+  const ingredientInput = useRef(null);
+  const history = useHistory();
+
+  const { postData, data, error } = useFetch(
+    "http://localhost:3001/recipes",
+    "POST"
+  );
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log(title, method, cookingTime);
+    postData({
+      title,
+      ingredients,
+      method,
+      cookingTime: cookingTime + "minutes",
+    });
   };
+  const handleAdd = (e) => {
+    e.preventDefault();
+    const ing = newIngredient.trim();
+
+    if (ing && !ingredients.includes(ing)) {
+      setIngredients((prevIngredients) => [...prevIngredients, ing]);
+    }
+    setNewIngredient("");
+    ingredientInput.current.focus();
+  };
+  // Redirext the user when we gwt data response
+  useEffect(() => {
+    if (data) {
+      history.push("/");
+    }
+  }, [data]);
 
   return (
     <div className="create">
@@ -24,6 +56,26 @@ const Create = () => {
             required
           />
         </label>
+        <label>
+          <span>Recipe ingredients:</span>
+          <div className="ingredients">
+            <input
+              type="text"
+              onChange={(e) => setNewIngredient(e.target.value)}
+              value={newIngredient}
+              ref={ingredientInput}
+            />
+            <button className="btn" onClick={handleAdd}>
+              add
+            </button>
+          </div>
+        </label>
+        <p>
+          Current Ingredient:{" "}
+          {ingredients.map((i) => (
+            <em key={i}>{i}, </em>
+          ))}
+        </p>
         <label>
           <span>Recipe Method</span>
           <textarea
